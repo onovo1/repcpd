@@ -17,9 +17,25 @@ static bool request_handler(struct udp_sock *us, const struct sa *src,
 	enum pcp_result result = PCP_NO_RESOURCES;
 	struct mapping *mapping = NULL;
 	struct pcp_map *map = &msg->pld.map;
+	struct le *le = NULL;
+	struct pcp_option *op = NULL;
+	struct sa *int_addr = &msg->hdr.cli_addr;
+
 	int err;
 
 	if (msg->hdr.opcode != PCP_MAP) return false;
+
+	/*Check if the THIRD PARTY address exist*/
+	if (!list_isempty(&msg->optionl)){
+		LIST_FOREACH(&msg->optionl, le){
+			op =list_ledata(le);  
+			if (op->code==PCP_OPTION_THIRD_PARTY){
+				int_addr = &op->u.third_party;
+				//Set the port number 
+				sa_set_port(int_addr, map->int_port);
+			}
+		}
+	}
 
 	sa_set_port(&msg->hdr.cli_addr, map->int_port);
 
@@ -37,7 +53,7 @@ static bool request_handler(struct udp_sock *us, const struct sa *src,
 		msg->hdr.lifetime = pcp_lifetime_calculate(msg->hdr.lifetime);
 	}
 
-	mapping = mapping_find(table, map->proto, &msg->hdr.cli_addr);
+	mapping = mapping_find(table, map->proto, int_addr);
 	if (mapping) {
 		/* Simple Threat Model, verify nonce */
 		if (!pcp_nonce_cmp(msg, mapping->map.nonce)) {
@@ -74,21 +90,19 @@ static bool request_handler(struct udp_sock *us, const struct sa *src,
 
 	if (msg->hdr.lifetime) {
 
-		if (!mapping) {
-			struct pcp_option *opt;
+		struct pcp_option *opt;
 
-			opt = pcp_msg_option(msg, PCP_OPTION_DESCRIPTION);
+		opt = pcp_msg_option(msg, PCP_OPTION_DESCRIPTION);
 
-			err = mapping_create(&mapping, table, PCP_MAP,
-					     map->proto,
-					     &msg->hdr.cli_addr,
-					     &map->ext_addr, NULL,
-					     msg->hdr.lifetime, map->nonce,
-					     opt ? opt->u.description : NULL);
-			if (err) {
-				warning("mapping_create: %m\n", err);
-				goto error;
-			}
+		err = mapping_create(&mapping, table, PCP_MAP,
+				     map->proto,
+				     int_addr,
+				     &map->ext_addr, NULL,
+				     msg->hdr.lifetime, map->nonce,
+				     opt ? opt->u.description : NULL);
+		if (err) {
+			warning("mapping_create: %m\n", err);
+			goto error;
 		}
 	}
 	else {
