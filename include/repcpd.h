@@ -86,7 +86,9 @@ struct mapping *mapping_find_peer(const struct mapping_table *table,
 enum {
 	/* minimum and maximum lifetime, in [seconds] */
 	LIFETIME_MIN  =  120,
-	LIFETIME_MAX  = 3600,
+//	LIFETIME_MAX  = 3600,
+/*Allow a maximum of 4 hours to have the rule active*/
+	LIFETIME_MAX  = 14400,
 };
 
 typedef bool (repcpd_pcp_msg_h)(struct udp_sock *us, const struct sa *src,
