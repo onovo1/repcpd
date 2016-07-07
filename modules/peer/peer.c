@@ -19,6 +19,7 @@ static bool request_handler(struct udp_sock *us, const struct sa *src,
 	enum pcp_result result = PCP_NO_RESOURCES;
 	struct mapping *mapping = NULL;
 	struct sa int_addr;
+	struct sa *ei = NULL;
 	uint32_t lifetime;
 	int err;
 
@@ -66,8 +67,12 @@ static bool request_handler(struct udp_sock *us, const struct sa *src,
 				}
 			}
 
+			/* Check the external Interface note: 
+			af is suggested AF -- AF_UNSPEC means any */
+			ei = repcpd_extaddr_find(AF_UNSPEC);
+
 			err = mapping_create(&mapping, table, PCP_PEER,
-					     peer.map.proto, &int_addr,
+					     peer.map.proto, &int_addr, ei,
 					     &peer.map.ext_addr,
 					     &peer.remote_addr,
 					     lifetime, peer.map.nonce, NULL);

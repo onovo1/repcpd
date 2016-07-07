@@ -72,7 +72,6 @@ static int listen_handler(const struct pl *interface, void *arg)
 	return err;
 }
 
-
 int repcpd_extaddr_init(void)
 {
 	int err;

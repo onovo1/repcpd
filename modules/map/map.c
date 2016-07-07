@@ -20,6 +20,7 @@ static bool request_handler(struct udp_sock *us, const struct sa *src,
 	struct le *le = NULL;
 	struct pcp_option *op = NULL;
 	struct sa *int_addr = &msg->hdr.cli_addr;
+        struct sa *ei = NULL;
 
 	int err;
 
@@ -92,11 +93,15 @@ static bool request_handler(struct udp_sock *us, const struct sa *src,
 
 		struct pcp_option *opt;
 
+		/* Check the external Interface note: af is suggested AF -- AF_UNSPEC means any */
+		ei = repcpd_extaddr_find(AF_UNSPEC);
+
 		opt = pcp_msg_option(msg, PCP_OPTION_DESCRIPTION);
 
 		err = mapping_create(&mapping, table, PCP_MAP,
 				     map->proto,
 				     int_addr,
+				     ei,
 				     &map->ext_addr, NULL,
 				     msg->hdr.lifetime, map->nonce,
 				     opt ? opt->u.description : NULL);
