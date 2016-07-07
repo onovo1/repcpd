@@ -137,8 +137,7 @@ static int module_init(void)
 {
 	int err;
 
-	//err = mapping_table_alloc(&table, "REPCPD-MAP");
-	err = mapping_table_alloc(&table, "PREROUTING");
+	err = mapping_table_alloc(&table, "REPCPD-MAP");
 	if (err)
 		return err;
 
