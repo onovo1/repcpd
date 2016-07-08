@@ -31,8 +31,8 @@ static void mapping_destructor(void *arg)
 		case PCP_MAP:
 			mapping->table->be->delete(mapping->table->name,
 						   mapping->map.proto,
-						   mapping->ext_int,
 						   &mapping->map.ext_addr,
+						   mapping->ext_int,
 						   &mapping->int_addr,
 						   mapping->descr);
 			break;
@@ -40,8 +40,8 @@ static void mapping_destructor(void *arg)
 		case PCP_PEER:
 			mapping->table->be->delete_snat(mapping->table->name,
 							mapping->map.proto,
-						        mapping->ext_int,
 							&mapping->map.ext_addr,
+						        mapping->ext_int,
 							&mapping->int_addr,
 							&mapping->remote_addr,
 							mapping->descr);
@@ -89,7 +89,7 @@ static uint32_t key(int proto, const struct sa *int_addr,
 int mapping_create(struct mapping **mappingp, struct mapping_table *table,
 		   enum pcp_opcode opcode,
 		   int proto,
-		   const struct sa *int_addr, struct sa *ei,
+		   const struct sa *int_addr, char *ei,
 		   const struct sa *ext_addr, const struct sa *remote_addr,
 		   uint32_t lifetime, const uint8_t nonce[12],
 		   const char *descr)
@@ -125,13 +125,13 @@ int mapping_create(struct mapping **mappingp, struct mapping_table *table,
 	switch (opcode) {
 
 	case PCP_MAP:
-		err = table->be->append(table->name, proto, ei, ext_addr, int_addr,
+		err = table->be->append(table->name, proto, ext_addr, ei, int_addr,
 					descr);
 		break;
 
 	case PCP_PEER:
-		err = table->be->append_snat(table->name, proto, ei,
-					     ext_addr, int_addr,
+		err = table->be->append_snat(table->name, proto, 
+					     ext_addr, ei, int_addr,
 					     remote_addr, descr);
 		break;
 

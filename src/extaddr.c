@@ -7,11 +7,13 @@
 #include <re.h>
 #include <repcpd.h>
 #include "pcpd.h"
-
+#include <string.h>
+#include <stdlib.h>
 
 struct extaddr {
 	struct le le;
 	struct sa addr;
+	char *ifname;
 };
 
 
@@ -21,6 +23,8 @@ static struct list extaddrl;
 static void destructor(void *arg)
 {
 	struct extaddr *ea = arg;
+
+	free(ea->ifname);
 
 	list_unlink(&ea->le);
 }
@@ -35,6 +39,10 @@ static int extaddr_add(const char *ifname, const struct sa *addr)
 		return ENOMEM;
 
 	ea->addr = *addr;
+
+	ea->ifname = (char *)malloc((strlen(ifname)+1)*sizeof(char));
+	strcpy(ea->ifname, ifname);//, strlen(ifname));
+
 	list_append(&extaddrl, &ea->le, ea);
 
 	debug("added external interface: %s with IP-address %j\n",
@@ -130,6 +138,22 @@ int repcpd_extaddr_assign(struct sa *ext_addr, uint16_t int_port, int af)
 	return 0;
 }
 
+char *repcpd_extaddr_ifname_find(int af)
+{
+	struct le *le;
+
+	for (le = extaddrl.head; le; le = le->next) {
+
+		struct extaddr *ea = le->data;
+
+		if (af != AF_UNSPEC && af != sa_af(&ea->addr))
+			continue;
+
+		return ea->ifname;
+	}
+
+	return NULL;
+}
 
 struct sa *repcpd_extaddr_find(int af)
 {
