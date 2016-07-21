@@ -87,8 +87,9 @@ enum {
 	/* minimum and maximum lifetime, in [seconds] */
 	LIFETIME_MIN  =  120,
 //	LIFETIME_MAX  = 3600,
-/*Allow a maximum of 4 hours to have the rule active*/
-	LIFETIME_MAX  = 14400,
+/*Allow a maximum of 24 hours to have the rule active*/
+//	LIFETIME_MAX  = 14400,
+	LIFETIME_MAX  = 86400,
 };
 
 typedef bool (repcpd_pcp_msg_h)(struct udp_sock *us, const struct sa *src,
